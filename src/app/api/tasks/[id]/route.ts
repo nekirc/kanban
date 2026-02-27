@@ -10,19 +10,35 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, description, columnId, order, priority } = await req.json();
+  const { title, description, columnId, order, priority, tags } = await req.json();
+
+  const data: any = {
+    title,
+    description,
+    columnId,
+    order,
+    priority
+  };
+
+  // Simple tag management for MVP
+  if (tags) {
+      data.tags = {
+          set: [], // Clear existing
+          connectOrCreate: tags.map((t: any) => ({
+              where: { id: t.id || 'new-tag' },
+              create: { name: t.name, color: t.color || '#5B6CFF' }
+          }))
+      };
+  }
 
   const task = await prisma.task.update({
     where: {
       id: params.id,
       column: { board: { userId: (session.user as any).id } }
     },
-    data: {
-      title,
-      description,
-      columnId,
-      order,
-      priority
+    data,
+    include: {
+        tags: true
     }
   });
 

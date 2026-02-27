@@ -22,8 +22,10 @@ import {
 import { Plus } from 'lucide-react';
 import { Column } from './Column';
 import { Card } from './Card';
+import { TaskModal } from './TaskModal';
 import { createPortal } from 'react-dom';
 import { useParams, useSearchParams } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 
 interface Task {
   id: string;
@@ -32,6 +34,7 @@ interface Task {
   priority: string;
   order: number;
   columnId: string;
+  tags?: any[];
 }
 
 interface ColumnData {
@@ -44,6 +47,7 @@ interface ColumnData {
 function BoardContent({ initialData }: { initialData: ColumnData[] }) {
   const [columns, setColumns] = useState<ColumnData[]>(initialData);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const { id: boardId } = useParams();
   const searchParams = useSearchParams();
@@ -236,6 +240,24 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
       }
   };
 
+  const handleDeleteColumn = async (columnId: string) => {
+      const res = await fetch(`/api/columns/${columnId}`, { method: 'DELETE' });
+      if (res.ok) {
+          setColumns(prev => prev.filter(c => c.id !== columnId));
+      }
+  };
+
+  const handleUpdateColumn = async (columnId: string, title: string) => {
+      const res = await fetch(`/api/columns/${columnId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title })
+      });
+      if (res.ok) {
+          setColumns(prev => prev.map(c => c.id === columnId ? { ...c, title } : c));
+      }
+  };
+
   if (!isMounted) return null;
 
   const filteredColumns = columns.map(col => ({
@@ -264,6 +286,9 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
             onAddTask={handleAddTask}
             onDeleteTask={handleDeleteTask}
             onUpdateTask={handleUpdateTask}
+            onDeleteColumn={handleDeleteColumn}
+            onUpdateColumn={handleUpdateColumn}
+            onTaskClick={(task) => setSelectedTask(task)}
           />
         ))}
 
@@ -274,6 +299,16 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
            <Plus size={14} /> Add Column
         </button>
       </div>
+
+      <AnimatePresence>
+        {selectedTask && (
+          <TaskModal
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onUpdate={handleUpdateTask}
+          />
+        )}
+      </AnimatePresence>
 
       {createPortal(
         <DragOverlay dropAnimation={{
@@ -291,6 +326,7 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
                 task={activeTask}
                 onDelete={() => {}}
                 onUpdate={() => {}}
+                onClick={() => {}}
               />
             </div>
           ) : null}
