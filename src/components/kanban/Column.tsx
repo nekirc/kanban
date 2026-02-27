@@ -18,9 +18,11 @@ interface ColumnProps {
   title: string;
   tasks: Task[];
   onAddTask: (columnId: string) => void;
+  onDeleteTask: (id: string) => void;
+  onUpdateTask: (id: string, data: Partial<Task>) => void;
 }
 
-export function Column({ id, title, tasks, onAddTask }: ColumnProps) {
+export function Column({ id, title, tasks, onAddTask, onDeleteTask, onUpdateTask }: ColumnProps) {
   const { setNodeRef } = useDroppable({
     id,
     data: {
@@ -39,23 +41,23 @@ export function Column({ id, title, tasks, onAddTask }: ColumnProps) {
   }[title] || 'bg-primary';
 
   return (
-    <div className="w-[300px] flex-shrink-0 flex flex-col max-h-full bg-[#FFFFFF]/50 dark:bg-[#171A21]/50 rounded-column transition-all">
+    <div className="w-[300px] flex-shrink-0 flex flex-col max-h-full bg-white/5 dark:bg-white/[0.02] rounded-column transition-all">
       <div className="flex items-center justify-between px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${statusColor}`} />
-          <h3 className="font-bold text-sm tracking-tight">{title}</h3>
-          <span className="text-[10px] font-bold opacity-30 ml-1">
+          <h3 className="font-bold text-sm tracking-tight text-white">{title}</h3>
+          <span className="text-[10px] font-bold opacity-30 ml-1 text-white">
             {tasks.length}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onAddTask(id)}
-            className="p-1.5 opacity-40 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-all"
+            className="p-1.5 opacity-40 hover:opacity-100 hover:bg-white/10 rounded-md transition-all text-white"
           >
             <Plus size={14} />
           </button>
-          <button className="p-1.5 opacity-40 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-all">
+          <button className="p-1.5 opacity-40 hover:opacity-100 hover:bg-white/10 rounded-md transition-all text-white">
             <MoreHorizontal size={14} />
           </button>
         </div>
@@ -67,13 +69,18 @@ export function Column({ id, title, tasks, onAddTask }: ColumnProps) {
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <Card key={task.id} task={task} />
+            <Card
+                key={task.id}
+                task={task}
+                onDelete={onDeleteTask}
+                onUpdate={onUpdateTask}
+            />
           ))}
         </SortableContext>
 
         <button
           onClick={() => onAddTask(id)}
-          className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold opacity-0 hover:opacity-40 transition-opacity mt-2"
+          className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold opacity-0 hover:opacity-40 transition-opacity mt-2 text-white"
         >
           <Plus size={12} /> Add Card
         </button>

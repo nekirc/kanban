@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -18,12 +18,12 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import { Column } from './Column';
 import { Card } from './Card';
 import { createPortal } from 'react-dom';
+import { useParams, useSearchParams } from 'next/navigation';
 
 interface Task {
   id: string;
@@ -41,10 +41,13 @@ interface ColumnData {
   tasks: Task[];
 }
 
-export function Board({ initialData }: { initialData: ColumnData[] }) {
+function BoardContent({ initialData }: { initialData: ColumnData[] }) {
   const [columns, setColumns] = useState<ColumnData[]>(initialData);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const { id: boardId } = useParams();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q')?.toLowerCase() || '';
 
   useEffect(() => {
     setIsMounted(true);
@@ -192,7 +195,56 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
       }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+      if (res.ok) {
+          setColumns(prev => prev.map(col => ({
+              ...col,
+              tasks: col.tasks.filter(t => t.id !== taskId)
+          })));
+      }
+  };
+
+  const handleUpdateTask = async (taskId: string, data: Partial<Task>) => {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+      });
+      if (res.ok) {
+          const updatedTask = await res.json();
+          setColumns(prev => prev.map(col => ({
+              ...col,
+              tasks: col.tasks.map(t => t.id === taskId ? { ...t, ...updatedTask } : t)
+          })));
+      }
+  };
+
+  const handleAddColumn = async () => {
+      const res = await fetch('/api/columns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              title: 'New Column',
+              boardId: boardId,
+              order: columns.length
+          })
+      });
+      if (res.ok) {
+          const newColumn = await res.json();
+          setColumns(prev => [...prev, { ...newColumn, tasks: [] }]);
+      }
+  };
+
   if (!isMounted) return null;
+
+  const filteredColumns = columns.map(col => ({
+      ...col,
+      tasks: col.tasks.filter(t =>
+        t.title.toLowerCase().includes(searchQuery) ||
+        t.description?.toLowerCase().includes(searchQuery)
+      )
+  }));
 
   return (
     <DndContext
@@ -203,11 +255,22 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
       onDragEnd={onDragEnd}
     >
       <div className="flex gap-6 items-start h-[calc(100vh-140px)] overflow-x-auto pb-8 px-8 custom-scrollbar bg-surface-board rounded-tl-3xl shadow-inner pt-8">
-        {columns.map((col) => (
-          <Column key={col.id} id={col.id} title={col.title} tasks={col.tasks} onAddTask={handleAddTask} />
+        {filteredColumns.map((col) => (
+          <Column
+            key={col.id}
+            id={col.id}
+            title={col.title}
+            tasks={col.tasks}
+            onAddTask={handleAddTask}
+            onDeleteTask={handleDeleteTask}
+            onUpdateTask={handleUpdateTask}
+          />
         ))}
 
-        <button className="w-[300px] flex-shrink-0 h-[48px] rounded-column border-2 border-dashed border-gray-200 dark:border-white/5 flex items-center justify-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 hover:border-primary hover:text-primary transition-all">
+        <button
+            onClick={handleAddColumn}
+            className="w-[300px] flex-shrink-0 h-[48px] rounded-column border-2 border-dashed border-white/10 flex items-center justify-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 hover:border-primary hover:text-primary transition-all text-white"
+        >
            <Plus size={14} /> Add Column
         </button>
       </div>
@@ -224,7 +287,11 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
         }}>
           {activeTask ? (
             <div style={{ transform: 'rotate(1deg)' }} className="scale-[1.02] shadow-card">
-              <Card task={activeTask} />
+              <Card
+                task={activeTask}
+                onDelete={() => {}}
+                onUpdate={() => {}}
+              />
             </div>
           ) : null}
         </DragOverlay>,
@@ -232,4 +299,12 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
       )}
     </DndContext>
   );
+}
+
+export function Board({ initialData }: { initialData: ColumnData[] }) {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <BoardContent initialData={initialData} />
+        </Suspense>
+    );
 }

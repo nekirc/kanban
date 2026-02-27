@@ -34,6 +34,26 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
   return NextResponse.json(board);
 }
 
+export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { title, description } = await req.json();
+
+  const board = await prisma.board.update({
+    where: {
+      id: params.id,
+      userId: (session.user as any).id
+    },
+    data: { title, description }
+  });
+
+  return NextResponse.json(board);
+}
+
 export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const session = await getServerSession(authOptions);

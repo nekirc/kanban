@@ -3,9 +3,26 @@
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Search, Bell, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Navbar() {
   const { data: session } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (search) {
+        router.push(`?q=${search}`);
+      } else {
+        router.push('?');
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search, router]);
 
   return (
     <nav className="h-16 flex items-center justify-between px-6 bg-white dark:bg-[#171A21] shadow-soft sticky top-0 z-40 transition-colors">
@@ -26,7 +43,9 @@ export default function Navbar() {
           <input
             type="text"
             placeholder="Search tasks, boards..."
-            className="w-full bg-[#F1F3F6] dark:bg-[#1E222B] border-none rounded-full py-2 pl-10 pr-4 text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-[#F1F3F6] dark:bg-[#1E222B] border-none rounded-full py-2 pl-10 pr-4 text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all text-foreground"
           />
         </div>
       </div>
