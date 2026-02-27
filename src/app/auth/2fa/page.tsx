@@ -8,14 +8,16 @@ export default function TwoFactorPage() {
   const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [secret, setSecret] = useState('');
+  const [qrCode, setQrCode] = useState('');
+  const [isEnabled, setIsEnabled] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     fetch('/api/auth/2fa')
       .then(res => res.json())
       .then(data => {
-        if (data.secret) setSecret(data.secret);
+        if (data.qrCode) setQrCode(data.qrCode);
+        if (data.isEnabled) setIsEnabled(true);
       });
   }, []);
 
@@ -54,14 +56,19 @@ export default function TwoFactorPage() {
       >
         <h1 className="text-3xl font-bold mb-2 text-center">Two-Factor Authentication</h1>
         <p className="text-center text-sm mb-6 opacity-70">
-          Enter the 6-digit code from your authenticator app.
+          {isEnabled
+            ? "Enter the 6-digit code from your authenticator app."
+            : "Scan the QR code below with your authenticator app to set up 2FA."}
         </p>
 
-        {secret && (
-          <div className="mb-6 p-4 neumorphic-inset text-xs break-all text-center">
-            <p className="font-bold mb-1">Demo Mode - Your Secret:</p>
-            <code>{secret}</code>
-            <p className="mt-2 text-gray-500">(Normally this would be a QR code during setup)</p>
+        {qrCode && !isEnabled && (
+          <div className="mb-6 flex flex-col items-center">
+             <div className="p-4 neumorphic-inset rounded-2xl bg-white/50 backdrop-blur-sm mb-4">
+                <img src={qrCode} alt="2FA QR Code" className="w-48 h-48" />
+             </div>
+             <p className="text-[10px] opacity-40 uppercase font-black tracking-widest text-center">
+                Scan with Google Authenticator
+             </p>
           </div>
         )}
 
@@ -75,9 +82,10 @@ export default function TwoFactorPage() {
               placeholder="000000"
               maxLength={6}
               required
+              autoFocus
             />
           </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {error && <p className="text-red-500 text-sm text-center font-bold">{error}</p>}
           <button
             type="submit"
             disabled={loading || token.length !== 6}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { verifyTwoFactorToken } from "@/lib/totp";
+import { verifyTwoFactorToken, generateOtpauthUrl, generateQrCodeDataURL } from "@/lib/totp";
 
 export async function POST(req: Request) {
   try {
@@ -26,6 +26,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid 2FA code" }, { status: 400 });
     }
 
+    // If valid and not already enabled, enable it
+    if (!user.twoFactorEnabled) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { twoFactorEnabled: true }
+      });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -41,16 +49,25 @@ export async function GET(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: (session.user as any).id },
-      select: { twoFactorSecret: true, email: true }
+      select: { twoFactorSecret: true, email: true, twoFactorEnabled: true }
     });
 
     if (!user || !user.twoFactorSecret) {
       return NextResponse.json({ error: "User not found" }, { status: 400 });
     }
 
+    // If 2FA is already enabled, we don't show the secret/QR code
+    if (user.twoFactorEnabled) {
+      return NextResponse.json({ isEnabled: true });
+    }
+
+    const otpauthUrl = generateOtpauthUrl(user.email || "user@zenflow.com", user.twoFactorSecret);
+    const qrCode = await generateQrCodeDataURL(otpauthUrl);
+
     return NextResponse.json({
       secret: user.twoFactorSecret,
-      email: user.email
+      qrCode,
+      isEnabled: false
     });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
