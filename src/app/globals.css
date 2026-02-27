@@ -3,23 +3,68 @@
 @tailwind utilities;
 
 :root {
-  --background: #e0e5ec;
-  --foreground: #31344b;
+  --background: #F6F8FB;
+  --foreground: #1A1C21;
+
+  --surface-board: #EEF2F7;
+  --surface-column: #FFFFFF;
+  --surface-card: #FFFFFF;
+
+  --primary: #5B6CFF;
+  --primary-hover: #4A5AE6;
+
+  --status-todo: #9AA4B2;
+  --status-progress: #4C82F7;
+  --status-review: #F5A524;
+  --status-blocked: #E5484D;
+  --status-done: #2FBF71;
+
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0F1115;
+    --foreground: #E6EAF2;
+
+    --surface-board: #171A21;
+    --surface-column: #171A21;
+    --surface-card: #1E222B;
+
+    --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 10px 15px rgba(0, 0, 0, 0.4);
+  }
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-.neumorphic {
-  background: #e0e5ec;
-  box-shadow: 9px 9px 16px rgb(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
-  border-radius: 20px;
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
 }
 
-.neumorphic-inset {
-  background: #e0e5ec;
-  box-shadow: inset 6px 6px 12px #b8b9be, inset -6px -6px 12px #ffffff;
-  border-radius: 12px;
+.shadow-medium {
+  box-shadow: var(--shadow-medium);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(30, 34, 43, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }

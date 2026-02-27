@@ -20,6 +20,7 @@ import {
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { Plus } from 'lucide-react';
 import { Column } from './Column';
 import { Card } from './Card';
 import { createPortal } from 'react-dom';
@@ -80,7 +81,6 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
 
     if (!isActiveATask) return;
 
-    // Im dropping a Task over another Task
     if (isActiveATask && isOverATask) {
       setColumns((prev) => {
         const activeColumn = prev.find((col) => col.tasks.some((t) => t.id === activeId));
@@ -92,10 +92,13 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
           const activeTaskIndex = activeColumn.tasks.findIndex((t) => t.id === activeId);
           const overTaskIndex = overColumn.tasks.findIndex((t) => t.id === overId);
 
-          const newColumns = [...prev];
-          const [movedTask] = activeColumn.tasks.splice(activeTaskIndex, 1);
+          const newColumns = JSON.parse(JSON.stringify(prev));
+          const actualActiveCol = newColumns.find((c: any) => c.id === activeColumn.id);
+          const actualOverCol = newColumns.find((c: any) => c.id === overColumn.id);
+
+          const [movedTask] = actualActiveCol.tasks.splice(activeTaskIndex, 1);
           movedTask.columnId = overColumn.id;
-          overColumn.tasks.splice(overTaskIndex, 0, movedTask);
+          actualOverCol.tasks.splice(overTaskIndex, 0, movedTask);
 
           return newColumns;
         }
@@ -103,7 +106,6 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
       });
     }
 
-    // Im dropping a Task over a column
     const isOverAColumn = over.data.current?.type === 'Column';
     if (isActiveATask && isOverAColumn) {
       setColumns((prev) => {
@@ -114,10 +116,13 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
 
         if (activeColumn.id !== overColumn.id) {
           const activeTaskIndex = activeColumn.tasks.findIndex((t) => t.id === activeId);
-          const newColumns = [...prev];
-          const [movedTask] = activeColumn.tasks.splice(activeTaskIndex, 1);
+          const newColumns = JSON.parse(JSON.stringify(prev));
+          const actualActiveCol = newColumns.find((c: any) => c.id === activeColumn.id);
+          const actualOverCol = newColumns.find((c: any) => c.id === overColumn.id);
+
+          const [movedTask] = actualActiveCol.tasks.splice(activeTaskIndex, 1);
           movedTask.columnId = overColumn.id;
-          overColumn.tasks.push(movedTask);
+          actualOverCol.tasks.push(movedTask);
 
           return newColumns;
         }
@@ -153,13 +158,10 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
 
     setActiveTask(null);
 
-    // Persist changes to backend
     const task = active.data.current?.task;
     if (task) {
-        // Find current state of the task
         const currentColumn = columns.find(col => col.tasks.some(t => t.id === task.id));
         if (currentColumn) {
-            const taskInCol = currentColumn.tasks.find(t => t.id === task.id);
             const index = currentColumn.tasks.findIndex(t => t.id === task.id);
 
             await fetch(`/api/tasks/${task.id}`, {
@@ -200,10 +202,14 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="flex gap-8 items-start h-[calc(100vh-200px)] overflow-x-auto pb-8 px-4 custom-scrollbar">
+      <div className="flex gap-6 items-start h-[calc(100vh-140px)] overflow-x-auto pb-8 px-8 custom-scrollbar bg-surface-board rounded-tl-3xl shadow-inner pt-8">
         {columns.map((col) => (
           <Column key={col.id} id={col.id} title={col.title} tasks={col.tasks} onAddTask={handleAddTask} />
         ))}
+
+        <button className="w-[300px] flex-shrink-0 h-[48px] rounded-column border-2 border-dashed border-gray-200 dark:border-white/5 flex items-center justify-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 hover:border-primary hover:text-primary transition-all">
+           <Plus size={14} /> Add Column
+        </button>
       </div>
 
       {createPortal(
@@ -211,12 +217,16 @@ export function Board({ initialData }: { initialData: ColumnData[] }) {
             sideEffects: defaultDropAnimationSideEffects({
                 styles: {
                     active: {
-                        opacity: '0.5',
+                        opacity: '0.4',
                     },
                 },
             }),
         }}>
-          {activeTask ? <Card task={activeTask} /> : null}
+          {activeTask ? (
+            <div style={{ transform: 'rotate(1deg)' }} className="scale-[1.02] shadow-card">
+              <Card task={activeTask} />
+            </div>
+          ) : null}
         </DragOverlay>,
         document.body
       )}

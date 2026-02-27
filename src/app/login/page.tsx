@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { ArrowRight, Lock } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -38,49 +39,66 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 transition-colors">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="neumorphic p-8 w-full max-w-md"
+        className="bg-white dark:bg-[#1E222B] p-10 w-full max-w-md rounded-3xl shadow-card border border-gray-100/50 dark:border-white/5"
       >
-        <h1 className="text-3xl font-bold mb-6 text-center">ZenFlow Login</h1>
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-6">
+            <Lock size={24} />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
+          <p className="text-sm font-medium opacity-40">Login to your secure workspace</p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-2 ml-1">Work Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 neumorphic-inset bg-transparent outline-none"
-              placeholder="john@example.com"
+              className="w-full p-4 bg-[#F6F8FB] dark:bg-[#171A21] border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+              placeholder="name@company.com"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
+            <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-2 ml-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 neumorphic-inset bg-transparent outline-none"
+              className="w-full p-4 bg-[#F6F8FB] dark:bg-[#171A21] border-none rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
               placeholder="••••••••"
               required
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && (
+            <motion.p
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-red-500 text-xs font-bold text-center bg-red-50 dark:bg-red-900/10 py-3 rounded-xl border border-red-100 dark:border-red-900/20"
+            >
+                {error}
+            </motion.p>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 neumorphic font-bold active:shadow-none transition-shadow"
+            className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-medium hover:bg-primary-hover transition-all active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            {loading ? 'Authenticating...' : 'Login'}
+            {loading ? 'Authenticating...' : 'Sign In'}
+            {!loading && <ArrowRight size={18} />}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm">
-          Don't have an account?{' '}
-          <Link href="/register" className="font-bold hover:underline">
-            Register
+
+        <p className="mt-10 text-center text-xs font-bold opacity-30 uppercase tracking-widest">
+          New to ZenFlow?{' '}
+          <Link href="/register" className="text-primary hover:underline">
+            Create Account
           </Link>
         </p>
       </motion.div>

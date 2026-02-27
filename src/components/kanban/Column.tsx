@@ -2,7 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreHorizontal } from 'lucide-react';
 import { Card } from './Card';
 
 interface Task {
@@ -30,37 +30,53 @@ export function Column({ id, title, tasks, onAddTask }: ColumnProps) {
 
   const taskIds = tasks.map((t) => t.id);
 
+  const statusColor = {
+    'To Do': 'bg-[#9AA4B2]',
+    'In Progress': 'bg-[#4C82F7]',
+    'Done': 'bg-[#2FBF71]',
+    'Review': 'bg-[#F5A524]',
+    'Blocked': 'bg-[#E5484D]',
+  }[title] || 'bg-primary';
+
   return (
-    <div className="w-80 flex-shrink-0 flex flex-col max-h-full">
-      <div className="flex items-center justify-between px-4 mb-6">
+    <div className="w-[300px] flex-shrink-0 flex flex-col max-h-full bg-[#FFFFFF]/50 dark:bg-[#171A21]/50 rounded-column transition-all">
+      <div className="flex items-center justify-between px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-2">
-          <h3 className="font-black text-sm uppercase tracking-widest">{title}</h3>
-          <span className="neumorphic-inset px-2 py-0.5 rounded-full text-[10px] font-bold opacity-50">
+          <div className={`w-2 h-2 rounded-full ${statusColor}`} />
+          <h3 className="font-bold text-sm tracking-tight">{title}</h3>
+          <span className="text-[10px] font-bold opacity-30 ml-1">
             {tasks.length}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onAddTask(id)}
-            className="p-1 neumorphic hover:scale-110 transition-transform active:scale-90"
+            className="p-1.5 opacity-40 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-all"
           >
             <Plus size={14} />
           </button>
-          <button className="p-1 opacity-30 hover:opacity-100 transition-opacity">
-            <MoreVertical size={14} />
+          <button className="p-1.5 opacity-40 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md transition-all">
+            <MoreHorizontal size={14} />
           </button>
         </div>
       </div>
 
       <div
         ref={setNodeRef}
-        className="flex-1 overflow-y-auto px-2 min-h-[200px]"
+        className="flex-1 overflow-y-auto px-3 pb-4 min-h-[200px] custom-scrollbar"
       >
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
             <Card key={task.id} task={task} />
           ))}
         </SortableContext>
+
+        <button
+          onClick={() => onAddTask(id)}
+          className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold opacity-0 hover:opacity-40 transition-opacity mt-2"
+        >
+          <Plus size={12} /> Add Card
+        </button>
       </div>
     </div>
   );

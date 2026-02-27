@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Plus, Layout, ArrowRight } from 'lucide-react';
+import { Plus, Layout, ArrowRight, MoreVertical } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 
 interface Board {
@@ -56,61 +56,63 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e0e5ec] text-[#31344b]">
+    <div className="min-h-screen bg-background transition-colors">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <header className="flex justify-between items-center mb-12">
+      <main className="max-w-7xl mx-auto px-8 py-12">
+        <header className="flex justify-between items-end mb-12">
           <div>
-            <h1 className="text-4xl font-black tracking-tight mb-2">My Boards</h1>
-            <p className="opacity-60">Manage your high-performance workflows.</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-2">My Workspaces</h1>
+            <p className="text-sm opacity-50 font-medium tracking-tight">Access your high-performance Kanban boards.</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="p-4 neumorphic flex items-center gap-2 font-bold hover:scale-105 transition-transform active:scale-95"
+            className="h-10 px-5 bg-primary hover:bg-primary-hover text-white rounded-full flex items-center gap-2 text-sm font-bold shadow-soft transition-all active:scale-95"
           >
-            <Plus size={20} />
+            <Plus size={16} />
             <span>Create Board</span>
           </button>
         </header>
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#31344b]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {boards.map((board) => (
               <motion.div
                 key={board.id}
-                whileHover={{ y: -5 }}
-                className="neumorphic p-6 flex flex-col h-48 group relative overflow-hidden"
+                whileHover={{ y: -4, boxShadow: 'var(--shadow-card)' }}
+                className="bg-surface-card p-6 rounded-column flex flex-col h-48 group relative shadow-soft border border-gray-100/50 dark:border-white/5 transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 neumorphic-inset rounded-xl">
-                    <Layout size={24} className="opacity-60" />
+                  <div className="p-2.5 bg-[#F6F8FB] dark:bg-[#171A21] rounded-xl text-primary">
+                    <Layout size={20} />
                   </div>
-                  <span className="text-[10px] opacity-40 font-mono">
-                    {new Date(board.createdAt).toLocaleDateString()}
-                  </span>
+                  <button className="opacity-20 hover:opacity-100 transition-opacity">
+                    <MoreVertical size={16} />
+                  </button>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{board.title}</h3>
-                <p className="text-sm opacity-50 line-clamp-2 mb-4">
-                  {board.description || "No description provided."}
+                <h3 className="text-lg font-bold mb-1 tracking-tight">{board.title}</h3>
+                <p className="text-xs opacity-40 font-medium line-clamp-2 mb-4">
+                  {board.description || "Updated 2 hours ago • Agile Workflow"}
                 </p>
 
                 <Link
                   href={`/board/${board.id}`}
-                  className="mt-auto flex items-center gap-2 text-sm font-black opacity-40 group-hover:opacity-100 transition-opacity"
+                  className="mt-auto flex items-center gap-1.5 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0"
                 >
-                  Enter Board <ArrowRight size={14} />
+                  Enter Workspace <ArrowRight size={12} />
                 </Link>
               </motion.div>
             ))}
 
             {boards.length === 0 && (
-              <div className="col-span-full neumorphic-inset p-20 text-center opacity-40">
-                <p className="text-xl">No boards found. Create your first board to get started!</p>
+              <div className="col-span-full py-20 flex flex-col items-center justify-center opacity-30">
+                <Layout size={48} className="mb-4" />
+                <p className="text-lg font-bold">No boards found</p>
+                <p className="text-sm font-medium">Create your first board to get started!</p>
               </div>
             )}
           </div>
@@ -118,21 +120,21 @@ export default function Dashboard() {
       </main>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="neumorphic p-8 w-full max-w-md"
+            className="bg-white dark:bg-[#1E222B] p-8 w-full max-w-md rounded-2xl shadow-card"
           >
-            <h2 className="text-2xl font-bold mb-6">Create New Board</h2>
+            <h2 className="text-xl font-bold mb-6 tracking-tight">Create New Board</h2>
             <form onSubmit={createBoard} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-2">Board Title</label>
+                <label className="block text-xs font-bold uppercase tracking-wider opacity-40 mb-2">Board Title</label>
                 <input
                   type="text"
                   value={newBoardTitle}
                   onChange={(e) => setNewBoardTitle(e.target.value)}
-                  className="w-full p-3 neumorphic-inset bg-transparent outline-none"
+                  className="w-full p-3 bg-[#F6F8FB] dark:bg-[#171A21] border-none rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                   placeholder="e.g. ZenFlow Launch"
                   required
                   autoFocus
@@ -142,13 +144,13 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-3 neumorphic font-bold"
+                  className="flex-1 py-3 text-sm font-bold opacity-50 hover:opacity-100 transition-opacity"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 neumorphic font-bold text-blue-600"
+                  className="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-soft hover:bg-primary-hover transition-all active:scale-95"
                 >
                   Create
                 </button>
