@@ -2,6 +2,17 @@
 
 ZenFlow is a premium, highly secure, and visually immersive Kanban application designed for high-performance teams. Unlike generic project management tools, ZenFlow focuses on a "flow-state" user experience—combining aesthetic elegance with enterprise-grade security and seamless mobile responsiveness.
 
+## Screenshots
+
+### Landing Page
+![Landing Page](./public/screenshots/landing.png)
+
+### Secure Login
+![Login Page](./public/screenshots/login.png)
+
+### User Registration
+![Register Page](./public/screenshots/register.png)
+
 ## Key Features
 
 - **Advanced Security**: Email/Password authentication with Bcrypt hashing and Two-Factor Authentication (2FA) via TOTP (Google Authenticator/Authy).
