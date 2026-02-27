@@ -35,6 +35,35 @@ ZenFlow is a premium, highly secure, and visually immersive Kanban application d
 - **Memory**: Minimum 1GB RAM recommended
 - **Storage**: Sufficient space for the SQLite database and attachments
 
+## Two-Factor Authentication (2FA) Setup Guide
+
+ZenFlow requires Two-Factor Authentication to ensure the highest level of security for your data. Follow these steps to set up and use Google Authenticator with ZenFlow:
+
+### 1. Install Google Authenticator
+Download and install the **Google Authenticator** app from the [App Store (iOS)](https://apps.apple.com/us/app/google-authenticator/id388497605) or [Google Play Store (Android)](https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2).
+
+### 2. Register a New Account
+- Navigate to the **Register** page.
+- Enter your name, email, and a secure password.
+- Upon successful registration, you will be redirected to the Login page.
+
+### 3. Obtain Your 2FA Secret
+- Log in with your new credentials.
+- You will be redirected to the **Two-Factor Authentication** page.
+- **Demo Mode Note**: In this version, your unique 2FA secret is displayed in a box on the screen. In a production environment, this would typically be a QR code.
+
+### 4. Link Google Authenticator
+- Open the Google Authenticator app on your mobile device.
+- Tap the **"+"** icon and select **"Enter a setup key"**.
+- Enter **"ZenFlow"** as the Account name.
+- Type in the **Secret Key** displayed on the ZenFlow 2FA page.
+- Ensure "Type of key" is set to **"Time-based"** and tap **"Add"**.
+
+### 5. Verify and Login
+- Google Authenticator will now generate a 6-digit code for ZenFlow that changes every 30 seconds.
+- Enter the current 6-digit code into the input field on the ZenFlow 2FA page.
+- Click **"Verify & Continue"** to enter your dashboard.
+
 ## Installation
 
 1. **Clone the repository**:
