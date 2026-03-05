@@ -40,7 +40,15 @@ export default function BoardPage() {
   );
 
   return (
-    <div className="h-screen bg-[#1A1C21] flex flex-col overflow-hidden text-white">
+    <div
+        className="h-screen flex flex-col overflow-hidden text-white transition-all duration-700"
+        style={{
+            backgroundColor: board.background || '#1A1C21',
+            backgroundImage: board.background?.startsWith('http') ? `url(${board.background})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+        }}
+    >
       <Navbar />
 
       <main className="flex-1 flex flex-col px-8 overflow-hidden">
@@ -60,6 +68,23 @@ export default function BoardPage() {
           </div>
 
           <div className="flex items-center gap-3">
+             <button
+                onClick={async () => {
+                    const color = prompt('Enter background color hex or image URL:', board.background || '#1A1C21');
+                    if (color) {
+                        const res = await fetch(`/api/boards/${id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ background: color })
+                        });
+                        if (res.ok) setBoard({ ...board, background: color });
+                    }
+                }}
+                className="p-3 bg-white/5 rounded-xl flex items-center gap-2 text-xs font-bold hover:bg-white/10 transition-all text-white"
+             >
+                <div className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: board.background || '#1A1C21' }} />
+                <span>Theme</span>
+             </button>
              <button className="p-3 bg-white/5 rounded-xl flex items-center gap-2 text-xs font-bold hover:bg-white/10 transition-all text-white">
                 <Users size={16} />
                 <span>Invite</span>

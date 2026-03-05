@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/activity";
 
 export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -41,6 +42,8 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
         tags: true
     }
   });
+
+  await logActivity((session.user as any).id, "UPDATE", "TASK", task.id, `Updated task: ${task.title}`);
 
   return NextResponse.json(task);
 }

@@ -24,18 +24,40 @@
   --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
 }
 
+[data-theme='dark'] {
+  --background: #0F1115;
+  --foreground: #E6EAF2;
+
+  --surface-board: #171A21;
+  --surface-column: #171A21;
+  --surface-card: #1E222B;
+
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme='oled'] {
+  --background: #000000;
+  --foreground: #FFFFFF;
+
+  --surface-board: #000000;
+  --surface-column: #0A0A0A;
+  --surface-card: #121212;
+
+  --shadow-soft: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-medium: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #0F1115;
     --foreground: #E6EAF2;
 
     --surface-board: #171A21;
     --surface-column: #171A21;
     --surface-card: #1E222B;
-
-    --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --shadow-card: 0 10px 15px rgba(0, 0, 0, 0.4);
   }
 }
 

@@ -18,6 +18,7 @@ model User {
   image         String?
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
+  role          String    @default("USER") // USER, ADMIN
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
@@ -62,6 +63,7 @@ model Board {
   columns     Column[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  background  String?  // hex or image url
 }
 
 model Column {
@@ -86,8 +88,29 @@ model Task {
   columnId    String
   column      Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
   tags        Tag[]
+  checklists  ChecklistItem[]
+  attachments Attachment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model ChecklistItem {
+  id        String  @id @default(cuid())
+  content   String
+  isDone    Boolean @default(false)
+  taskId    String
+  task      Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  size      Int
+  type      String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Tag {
@@ -102,6 +125,7 @@ model ActivityLog {
   action    String
   entity    String
   entityId  String
+  details   String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

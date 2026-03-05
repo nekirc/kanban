@@ -34,7 +34,18 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true });
+
+    // Set 2FA verified cookie
+    response.cookies.set('zf_2fa_verified', 'true', {
+        httpOnly: true,
+        secure: process.env.NODE_VERSION === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24, // 24 hours
+        path: '/',
+    });
+
+    return response;
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

@@ -23,9 +23,11 @@ import { Plus } from 'lucide-react';
 import { Column } from './Column';
 import { Card } from './Card';
 import { TaskModal } from './TaskModal';
+import { FilterBar } from './FilterBar';
+import { Analytics } from './Analytics';
 import { createPortal } from 'react-dom';
 import { useParams, useSearchParams } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface Task {
   id: string;
@@ -35,12 +37,15 @@ interface Task {
   order: number;
   columnId: string;
   tags?: any[];
+  checklists?: any[];
+  attachments?: any[];
 }
 
 interface ColumnData {
   id: string;
   title: string;
   order: number;
+  wipLimit: number | null;
   tasks: Task[];
 }
 
@@ -49,6 +54,8 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [filters, setFilters] = useState({ priority: null });
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const { id: boardId } = useParams();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q')?.toLowerCase() || '';
@@ -195,7 +202,7 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
       });
       if (res.ok) {
           const newTask = await res.json();
-          setColumns(prev => prev.map(col => col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col));
+          setColumns(prev => prev.map(col => col.id === columnId ? { ...col, tasks: [...col.tasks, { ...newTask, checklists: [], attachments: [] }] } : col));
       }
   };
 
@@ -247,14 +254,14 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
       }
   };
 
-  const handleUpdateColumn = async (columnId: string, title: string) => {
+  const handleUpdateColumn = async (columnId: string, data: any) => {
       const res = await fetch(`/api/columns/${columnId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title })
+          body: JSON.stringify(data)
       });
       if (res.ok) {
-          setColumns(prev => prev.map(c => c.id === columnId ? { ...c, title } : c));
+          setColumns(prev => prev.map(c => c.id === columnId ? { ...c, ...data } : c));
       }
   };
 
@@ -262,10 +269,12 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
 
   const filteredColumns = columns.map(col => ({
       ...col,
-      tasks: col.tasks.filter(t =>
-        t.title.toLowerCase().includes(searchQuery) ||
-        t.description?.toLowerCase().includes(searchQuery)
-      )
+      tasks: col.tasks.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(searchQuery) ||
+                            t.description?.toLowerCase().includes(searchQuery);
+        const matchesPriority = !filters.priority || t.priority === filters.priority;
+        return matchesSearch && matchesPriority;
+      })
   }));
 
   return (
@@ -276,28 +285,54 @@ function BoardContent({ initialData }: { initialData: ColumnData[] }) {
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
     >
-      <div className="flex gap-6 items-start h-[calc(100vh-140px)] overflow-x-auto pb-8 px-8 custom-scrollbar bg-surface-board rounded-tl-3xl shadow-inner pt-8">
-        {filteredColumns.map((col) => (
-          <Column
-            key={col.id}
-            id={col.id}
-            title={col.title}
-            tasks={col.tasks}
-            onAddTask={handleAddTask}
-            onDeleteTask={handleDeleteTask}
-            onUpdateTask={handleUpdateTask}
-            onDeleteColumn={handleDeleteColumn}
-            onUpdateColumn={handleUpdateColumn}
-            onTaskClick={(task) => setSelectedTask(task)}
-          />
-        ))}
+      <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center justify-between">
+              <FilterBar onFilterChange={(newFilters) => setFilters(prev => ({ ...prev, ...newFilters }))} />
+              <button
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className={`mb-6 px-4 py-2 rounded-xl text-xs font-bold transition-all ${showAnalytics ? 'bg-primary text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'}`}
+              >
+                  {showAnalytics ? 'Hide Analytics' : 'Show Analytics'}
+              </button>
+          </div>
 
-        <button
-            onClick={handleAddColumn}
-            className="w-[300px] flex-shrink-0 h-[48px] rounded-column border-2 border-dashed border-white/10 flex items-center justify-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 hover:border-primary hover:text-primary transition-all text-white"
-        >
-           <Plus size={14} /> Add Column
-        </button>
+          <AnimatePresence>
+            {showAnalytics && (
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                >
+                    <Analytics columns={columns} />
+                </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex gap-6 items-start h-[calc(100vh-140px)] overflow-x-auto pb-8 custom-scrollbar bg-surface-board rounded-tl-3xl shadow-inner pt-8 px-8">
+            {filteredColumns.map((col) => (
+              <Column
+                key={col.id}
+                id={col.id}
+                title={col.title}
+                tasks={col.tasks}
+                wipLimit={col.wipLimit}
+                onAddTask={handleAddTask}
+                onDeleteTask={handleDeleteTask}
+                onUpdateTask={handleUpdateTask}
+                onDeleteColumn={handleDeleteColumn}
+                onUpdateColumn={handleUpdateColumn}
+                onTaskClick={(task) => setSelectedTask(task)}
+              />
+            ))}
+
+            <button
+                onClick={handleAddColumn}
+                className="w-[300px] flex-shrink-0 h-[48px] rounded-column border-2 border-dashed border-white/10 flex items-center justify-center gap-2 text-xs font-bold opacity-40 hover:opacity-100 hover:border-primary hover:text-primary transition-all text-white"
+            >
+               <Plus size={14} /> Add Column
+            </button>
+          </div>
       </div>
 
       <AnimatePresence>
