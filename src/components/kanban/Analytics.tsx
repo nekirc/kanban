@@ -51,15 +51,19 @@ export function Analytics({ columns }: StatsProps) {
     value
   }));
 
-  // Simulated Burndown Data
+  // Calculate Story Points based burndown
+  const totalPoints = columns.reduce((acc, col) => acc + col.tasks.reduce((sum: number, t: any) => sum + (t.storyPoints || 0), 0), 0);
+  const donePoints = columns.find(col => col.title.toLowerCase() === 'done')?.tasks.reduce((sum: number, t: any) => sum + (t.storyPoints || 0), 0) || 0;
+
+  // Simulated Burndown Data using Story Points
   const burndownData = [
-    { day: 'Mon', remaining: 45, ideal: 45 },
-    { day: 'Tue', remaining: 42, ideal: 38 },
-    { day: 'Wed', remaining: 35, ideal: 32 },
-    { day: 'Thu', remaining: 28, ideal: 25 },
-    { day: 'Fri', remaining: 20, ideal: 18 },
-    { day: 'Sat', remaining: 15, ideal: 12 },
-    { day: 'Sun', remaining: 12, ideal: 5 },
+    { day: 'Mon', remaining: totalPoints, ideal: totalPoints },
+    { day: 'Tue', remaining: totalPoints * 0.9, ideal: totalPoints * 0.85 },
+    { day: 'Wed', remaining: totalPoints * 0.8, ideal: totalPoints * 0.7 },
+    { day: 'Thu', remaining: totalPoints * 0.6, ideal: totalPoints * 0.55 },
+    { day: 'Fri', remaining: totalPoints * 0.45, ideal: totalPoints * 0.4 },
+    { day: 'Sat', remaining: totalPoints * 0.3, ideal: totalPoints * 0.25 },
+    { day: 'Sun', remaining: totalPoints - donePoints, ideal: 0 },
   ];
 
   return (
@@ -135,6 +139,7 @@ export function Analytics({ columns }: StatsProps) {
                             <Tooltip
                                 contentStyle={{ backgroundColor: '#1A1C21', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                                 itemStyle={{ color: '#fff', fontSize: '12px' }}
+                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                             />
                             <Bar dataKey="tasks" fill="#5B6CFF" radius={[4, 4, 0, 0]} barSize={40} />
                         </BarChart>

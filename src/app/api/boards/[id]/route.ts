@@ -19,6 +19,14 @@ export async function GET(req: Request, props: { params: Promise<{ id: string }>
       columns: {
         include: {
           tasks: {
+            include: {
+              creator: {
+                select: { name: true, email: true }
+              },
+              checklists: true,
+              attachments: true,
+              tags: true,
+            },
             orderBy: { order: 'asc' }
           }
         },

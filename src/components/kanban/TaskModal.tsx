@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Type, AlignLeft, BarChart2, Tag as TagIcon, Check, CheckSquare, Plus, Trash2, History, Edit3, Eye, Paperclip, File as FileIcon, ExternalLink } from 'lucide-react';
+import { X, Type, AlignLeft, BarChart2, Tag as TagIcon, Check, CheckSquare, Plus, Trash2, History, Edit3, Eye, Paperclip, File as FileIcon, ExternalLink, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -18,11 +18,16 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || '');
   const [priority, setPriority] = useState(task.priority);
+  const [storyPoints, setStoryPoints] = useState(task.storyPoints || 0);
   const [checklists, setChecklists] = useState(task.checklists || []);
   const [attachments, setAttachments] = useState(task.attachments || []);
+  const [tags, setTags] = useState(task.tags || []);
   const [newCheckItem, setNewCheckItem] = useState('');
   const [activities, setActivities] = useState([]);
   const [isEditingDesc, setIsEditingDesc] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#5B6CFF');
+  const [showTagInput, setShowTagInput] = useState(false);
 
   const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
@@ -35,7 +40,7 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
   }, [activeTab, task.id]);
 
   const handleSave = () => {
-    onUpdate(task.id, { title, description, priority });
+    onUpdate(task.id, { title, description, priority, storyPoints, tags });
     onClose();
   };
 
@@ -75,26 +80,31 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // In a real app, you'd upload to S3/Cloudinary here.
-      // For this MVP, we'll simulate an upload with a local URL.
-      const mockUrl = URL.createObjectURL(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('taskId', task.id);
 
       const res = await fetch('/api/attachments', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              filename: file.name,
-              url: mockUrl,
-              size: file.size,
-              type: file.type,
-              taskId: task.id
-          })
+          body: formData,
       });
 
       if (res.ok) {
           const attachment = await res.json();
           setAttachments([...attachments, attachment]);
       }
+  };
+
+  const handleAddTag = () => {
+      if (!newTagName) return;
+      const newTag = { name: newTagName, color: newTagColor };
+      setTags([...tags, newTag]);
+      setNewTagName('');
+      setShowTagInput(false);
+  };
+
+  const handleRemoveTag = (tagName: string) => {
+      setTags(tags.filter((t: any) => t.name !== tagName));
   };
 
   return (
@@ -130,9 +140,16 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
         <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar min-h-[400px]">
           {activeTab === 'DETAILS' ? (
             <>
-              {/* Title */}
+              {/* Title and Creator */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-3 ml-1">Task Title</label>
+                <div className="flex justify-between items-end mb-3">
+                    <label className="block text-xs font-bold uppercase tracking-widest opacity-30 ml-1">Task Title</label>
+                    {task.creator && (
+                        <div className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
+                            Created by: {task.creator.name}
+                        </div>
+                    )}
+                </div>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -140,26 +157,91 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
                 />
               </div>
 
-              {/* Criticality */}
+              <div className="grid grid-cols-2 gap-8">
+                  {/* Criticality */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-3 ml-1 flex items-center gap-2">
+                        <BarChart2 size={12} /> Criticality
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                    {priorities.map((p) => (
+                        <button
+                        key={p}
+                        onClick={() => setPriority(p)}
+                        className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all ${
+                            priority === p
+                            ? 'bg-primary text-white shadow-medium scale-105'
+                            : 'bg-[#F6F8FB] dark:bg-[#171A21] opacity-40 hover:opacity-100'
+                        }`}
+                        >
+                        {p}
+                        </button>
+                    ))}
+                    </div>
+                  </div>
+
+                  {/* Story Points */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-3 ml-1 flex items-center gap-2">
+                        <Zap size={12} /> Story Points
+                    </label>
+                    <input
+                        type="number"
+                        value={storyPoints}
+                        onChange={(e) => setStoryPoints(parseInt(e.target.value) || 0)}
+                        className="w-full bg-[#F6F8FB] dark:bg-[#171A21] border-none rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
+              </div>
+
+              {/* Tags */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest opacity-30 mb-3 ml-1 flex items-center gap-2">
-                    <BarChart2 size={12} /> Criticality
+                    <TagIcon size={12} /> Labels
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {priorities.map((p) => (
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {tags.map((tag: any) => (
+                        <div
+                            key={tag.name}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold text-white shadow-sm transition-all hover:brightness-110"
+                            style={{ backgroundColor: tag.color }}
+                        >
+                            {tag.name}
+                            <button onClick={() => handleRemoveTag(tag.name)} className="hover:text-black/50"><X size={10} /></button>
+                        </div>
+                    ))}
                     <button
-                      key={p}
-                      onClick={() => setPriority(p)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                        priority === p
-                          ? 'bg-primary text-white shadow-medium scale-105'
-                          : 'bg-[#F6F8FB] dark:bg-[#171A21] opacity-40 hover:opacity-100'
-                      }`}
+                        onClick={() => setShowTagInput(true)}
+                        className="w-8 h-8 rounded-full bg-[#F6F8FB] dark:bg-[#171A21] flex items-center justify-center opacity-40 hover:opacity-100 transition-all"
                     >
-                      {p}
+                        <Plus size={14} />
                     </button>
-                  ))}
                 </div>
+                <AnimatePresence>
+                    {showTagInput && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="flex gap-2 overflow-hidden"
+                        >
+                            <input
+                                value={newTagName}
+                                onChange={(e) => setNewTagName(e.target.value)}
+                                placeholder="Label name..."
+                                className="flex-1 bg-[#F6F8FB] dark:bg-[#171A21] rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                            <input
+                                type="color"
+                                value={newTagColor}
+                                onChange={(e) => setNewTagColor(e.target.value)}
+                                className="w-10 h-10 border-none bg-transparent cursor-pointer"
+                            />
+                            <button onClick={handleAddTag} className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold">Add</button>
+                            <button onClick={() => setShowTagInput(false)} className="px-4 py-2 bg-gray-100 dark:bg-white/5 rounded-xl text-xs font-bold">Cancel</button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
               </div>
 
               {/* Attachments */}

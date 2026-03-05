@@ -11,14 +11,15 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, description, columnId, order, priority, tags } = await req.json();
+  const { title, description, columnId, order, priority, storyPoints, tags } = await req.json();
 
   const data: any = {
     title,
     description,
     columnId,
     order,
-    priority
+    priority,
+    storyPoints: storyPoints !== undefined ? parseInt(storyPoints) : undefined
   };
 
   // Simple tag management for MVP

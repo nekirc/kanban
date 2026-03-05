@@ -85,6 +85,11 @@ export default function LoginPage() {
                 {error}
             </motion.p>
           )}
+          <div className="flex justify-end">
+            <Link href="/auth/forgot-password" university-link="true" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
           <button
             type="submit"
             disabled={loading}

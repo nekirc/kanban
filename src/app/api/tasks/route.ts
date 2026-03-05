@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       columnId,
       order: order ?? 0,
       priority: priority ?? "MEDIUM",
+      creatorId: (session.user as any).id,
     }
   });
 

@@ -24,7 +24,18 @@ model User {
   accounts      Account[]
   sessions      Session[]
   boards        Board[]
+  createdTasks  Task[]    @relation("TaskCreator")
   activities    ActivityLog[]
+  resetTokens   ResetToken[]
+}
+
+model ResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Account {
@@ -84,9 +95,12 @@ model Task {
   description String?
   order       Int
   priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  storyPoints Int      @default(0)
   dueDate     DateTime?
   columnId    String
   column      Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  creatorId   String
+  creator     User     @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   tags        Tag[]
   checklists  ChecklistItem[]
   attachments Attachment[]
@@ -115,7 +129,7 @@ model Attachment {
 
 model Tag {
   id    String @id @default(cuid())
-  name  String
+  name  String @unique
   color String
   tasks Task[]
 }

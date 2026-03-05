@@ -57,7 +57,6 @@ export function Card({ task, onDelete, onUpdate, onClick }: CardProps) {
       {...attributes}
       {...listeners}
       onClick={onClick}
-      whileHover={{ y: -2, boxShadow: 'var(--shadow-medium)' }}
       onHoverStart={() => setShowActions(true)}
       onHoverEnd={() => setShowActions(false)}
       className={`bg-surface-card p-4 rounded-card shadow-soft mb-3 cursor-grab active:cursor-grabbing group relative border border-gray-100/50 dark:border-white/5 transition-all ${
@@ -98,12 +97,19 @@ export function Card({ task, onDelete, onUpdate, onClick }: CardProps) {
         <p className="text-[11px] opacity-40 font-medium line-clamp-2 mb-3 px-1 text-foreground">{task.description}</p>
       )}
 
-      <div className="flex flex-wrap gap-1.5 mb-4 px-1">
-        <div className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/10 text-[9px] font-black uppercase tracking-wider text-blue-600 flex items-center gap-1 border border-blue-100 dark:border-blue-900/20">
-           <div className="w-1 h-1 rounded-full bg-blue-600" />
-           Design
+      {(task as any).tags && (task as any).tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4 px-1">
+            {(task as any).tags.map((tag: any) => (
+                <div
+                    key={tag.name}
+                    className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider text-white shadow-sm"
+                    style={{ backgroundColor: tag.color }}
+                >
+                    {tag.name}
+                </div>
+            ))}
         </div>
-      </div>
+      )}
 
       <div className="mt-auto pt-3 border-t border-gray-50 dark:border-white/5 flex items-center justify-between px-1">
         <div className="flex items-center gap-3 opacity-20">
