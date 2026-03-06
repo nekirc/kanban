@@ -125,7 +125,7 @@ export function Card({ task, onDelete, onUpdate, onClick }: CardProps) {
 
         {/* Creator Initials in right bottom corner */}
         <div className="w-6 h-6 rounded-full bg-primary/10 border border-white dark:border-[#1E222B] flex items-center justify-center text-[9px] font-black text-primary">
-          JD
+          {(task as any).creator?.name ? (task as any).creator.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'JD'}
         </div>
       </div>
     </motion.div>

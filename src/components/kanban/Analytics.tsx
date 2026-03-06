@@ -184,7 +184,7 @@ export function Analytics({ columns }: StatsProps) {
             </div>
 
             {/* Burndown Chart */}
-            <div className="bg-white/5 dark:bg-white/[0.02] p-6 rounded-2xl border border-white/5 lg:col-span-2">
+            <div className="bg-white/5 dark:bg-white/[0.02] p-6 rounded-2xl border border-white/5 lg:col-span-2 mb-8">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-black uppercase tracking-widest opacity-40">Sprint Burndown</h3>
                     <div className="flex gap-4">

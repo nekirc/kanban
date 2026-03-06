@@ -5,39 +5,14 @@ import Link from 'next/link';
 import { Search, Bell, User, Sun, Moon, Zap } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from '@/lib/theme-context';
 
 function NavbarContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('q') || '');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'oled'>('light');
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('zenflow-theme') as any;
-    if (savedTheme) {
-        setTheme(savedTheme);
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        if (savedTheme === 'dark' || savedTheme === 'oled') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const themes: ('light' | 'dark' | 'oled')[] = ['light', 'dark', 'oled'];
-    const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
-    setTheme(nextTheme);
-    localStorage.setItem('zenflow-theme', nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    if (nextTheme === 'dark' || nextTheme === 'oled') {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
-  };
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -60,8 +35,8 @@ function NavbarContent() {
           ZenFlow
         </Link>
         <div className="hidden md:flex items-center gap-6 text-sm font-medium opacity-60">
-          <Link href="/dashboard" className="hover:opacity-100 transition-opacity">Workspaces</Link>
-          <Link href="/dashboard" className="hover:opacity-100 transition-opacity">Projects</Link>
+          <Link href="/dashboard" className="hover:opacity-100 transition-opacity text-foreground">Workspaces</Link>
+          <Link href="/projects" className="hover:opacity-100 transition-opacity text-foreground">Projects</Link>
         </div>
       </div>
 
