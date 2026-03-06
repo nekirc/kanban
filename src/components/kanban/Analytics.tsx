@@ -52,7 +52,7 @@ export function Analytics({ columns }: StatsProps) {
   }));
 
   // Calculate Story Points based burndown
-  const totalPoints = columns.reduce((acc, col) => acc + col.tasks.reduce((sum: number, t: any) => sum + (t.storyPoints || 0), 0), 0);
+  const totalPoints = columns.reduce((acc, col) => acc + col.tasks.reduce((sum: number, t: any) => sum + (t.storyPoints || 0), 0), 0) || 10; // Default to 10 if 0 for visual
   const donePoints = columns.find(col => col.title.toLowerCase() === 'done')?.tasks.reduce((sum: number, t: any) => sum + (t.storyPoints || 0), 0) || 0;
 
   // Simulated Burndown Data using Story Points
@@ -184,7 +184,7 @@ export function Analytics({ columns }: StatsProps) {
             </div>
 
             {/* Burndown Chart */}
-            <div className="bg-white/5 dark:bg-white/[0.02] p-6 rounded-2xl border border-white/5 lg:col-span-2 mb-8">
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/5 lg:col-span-2 mb-12">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-black uppercase tracking-widest opacity-40">Sprint Burndown</h3>
                     <div className="flex gap-4">
@@ -198,7 +198,7 @@ export function Analytics({ columns }: StatsProps) {
                         </div>
                     </div>
                 </div>
-                <div className="h-[300px] w-full">
+                <div className="h-[350px] w-full pb-6">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={burndownData}>
                             <defs>

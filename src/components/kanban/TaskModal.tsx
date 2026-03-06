@@ -76,6 +76,13 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
     }
   };
 
+  const deleteAttachment = async (id: string) => {
+      const res = await fetch(`/api/attachments/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+          setAttachments(attachments.filter((a: any) => a.id !== id));
+      }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -265,9 +272,17 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
                             <p className="text-xs font-bold truncate tracking-tight">{file.filename}</p>
                             <p className="text-[9px] opacity-40 font-medium">{(file.size / 1024).toFixed(1)} KB</p>
                         </div>
-                        <a href={file.url} target="_blank" rel="noopener noreferrer" className="p-1 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity">
-                            <ExternalLink size={14} />
-                        </a>
+                        <div className="flex items-center gap-1">
+                            <a href={file.url} target="_blank" rel="noopener noreferrer" className="p-1 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity text-foreground">
+                                <ExternalLink size={14} />
+                            </a>
+                            <button
+                                onClick={() => deleteAttachment(file.id)}
+                                className="p-1 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity text-red-500"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
                      </div>
                    ))}
                 </div>

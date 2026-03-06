@@ -62,14 +62,30 @@
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
   border-color: var(--surface-board);
+}
+
+.bg-background {
+  background-color: var(--background) !important;
+}
+
+.text-foreground {
+  color: var(--foreground) !important;
+}
+
+.bg-surface-card {
+  background-color: var(--surface-card) !important;
+}
+
+.bg-surface-board {
+  background-color: var(--surface-board) !important;
 }
 
 .shadow-soft {

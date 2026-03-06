@@ -25,6 +25,7 @@ interface ColumnProps {
   onDeleteColumn: (id: string) => void;
   onUpdateColumn: (id: string, data: any) => void;
   onTaskClick: (task: any) => void;
+  isSwimlane?: boolean;
 }
 
 export function Column({
@@ -37,7 +38,8 @@ export function Column({
     onUpdateTask,
     onDeleteColumn,
     onUpdateColumn,
-    onTaskClick
+    onTaskClick,
+    isSwimlane = false
 }: ColumnProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -67,7 +69,7 @@ export function Column({
   };
 
   return (
-    <div className={`w-[300px] flex-shrink-0 flex flex-col max-h-full bg-white/5 dark:bg-white/[0.02] rounded-column transition-all border-2 ${isOverWip ? 'border-red-500/50 bg-red-500/5' : 'border-transparent'}`}>
+    <div className={`w-[300px] flex-shrink-0 flex flex-col ${isSwimlane ? 'max-h-[400px]' : 'max-h-full'} bg-white/5 rounded-column transition-all border-2 ${isOverWip ? 'border-red-500/50 bg-red-500/5' : 'border-transparent'}`}>
       <div className="flex items-center justify-between px-4 py-4 sticky top-0 z-10">
         <div className="flex flex-col gap-1 flex-1 mr-2">
           <div className="flex items-center gap-2">
@@ -77,29 +79,29 @@ export function Column({
                 autoFocus
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="bg-[#1A1C21] text-white text-sm font-bold outline-none border-b border-primary flex-1"
+                className="bg-surface-board text-foreground text-sm font-bold outline-none border-b border-primary flex-1"
               />
             ) : (
               <h3
                   onClick={() => setIsEditing(true)}
-                  className="font-bold text-sm tracking-tight text-white cursor-pointer hover:text-primary transition-colors truncate max-w-[150px]"
+                  className="font-bold text-sm tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors truncate max-w-[150px]"
               >
                   {title}
               </h3>
             )}
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isOverWip ? 'bg-red-500 text-white animate-pulse' : 'opacity-30 text-white bg-white/10'}`}>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isOverWip ? 'bg-red-500 text-white animate-pulse' : 'opacity-30 text-foreground bg-white/10'}`}>
               {tasks.length}{wipLimit ? ` / ${wipLimit}` : ''}
             </span>
           </div>
 
           {isEditing && (
             <div className="flex items-center gap-2 mt-2">
-                <span className="text-[9px] font-black uppercase opacity-30 text-white">WIP Limit:</span>
+                <span className="text-[9px] font-black uppercase opacity-30 text-foreground">WIP Limit:</span>
                 <input
                     type="number"
                     value={editWip}
                     onChange={(e) => setEditWip(e.target.value)}
-                    className="w-12 bg-[#1A1C21] text-white text-[10px] font-bold outline-none border-b border-primary"
+                    className="w-12 bg-surface-board text-foreground text-[10px] font-bold outline-none border-b border-primary"
                     placeholder="∞"
                 />
                 <button onClick={handleUpdate} className="text-green-500 ml-auto"><Check size={12} /></button>
@@ -111,7 +113,7 @@ export function Column({
         <div className="flex items-center gap-1 self-start pt-1">
           <button
             onClick={() => onAddTask(id)}
-            className="p-1.5 opacity-40 hover:opacity-100 hover:bg-white/10 rounded-md transition-all text-white"
+            className="p-1.5 opacity-40 hover:opacity-100 hover:bg-white/10 rounded-md transition-all text-foreground"
           >
             <Plus size={14} />
           </button>
@@ -119,7 +121,7 @@ export function Column({
             onClick={() => {
                 if (confirm('Delete this column and all its tasks?')) onDeleteColumn(id);
             }}
-            className="p-1.5 opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all text-white"
+            className="p-1.5 opacity-40 hover:opacity-100 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all text-foreground"
           >
             <Trash2 size={14} />
           </button>
@@ -151,7 +153,7 @@ export function Column({
 
         <button
           onClick={() => onAddTask(id)}
-          className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold opacity-0 hover:opacity-40 transition-opacity mt-2 text-white"
+          className="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold opacity-0 hover:opacity-40 transition-opacity mt-2 text-foreground"
         >
           <Plus size={12} /> Add Card
         </button>
