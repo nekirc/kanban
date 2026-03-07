@@ -10,6 +10,7 @@ export default function TwoFactorPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState('');
+  const [secret, setSecret] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
   const router = useRouter();
 
@@ -18,6 +19,7 @@ export default function TwoFactorPage() {
       .then(res => res.json())
       .then(data => {
         if (data.qrCode) setQrCode(data.qrCode);
+        if (data.secret) setSecret(data.secret);
         if (data.isEnabled) setIsEnabled(true);
       });
   }, []);
@@ -72,6 +74,16 @@ export default function TwoFactorPage() {
              <div className="p-4 bg-[#F6F8FB] dark:bg-[#171A21] rounded-3xl mb-4 border border-gray-100 dark:border-white/5">
                 <img src={qrCode} alt="2FA QR Code" className="w-40 h-40 mix-blend-multiply dark:mix-blend-normal opacity-80" />
              </div>
+
+             {secret && (
+               <div className="mb-6 w-full px-8">
+                  <p className="text-[10px] font-black opacity-30 uppercase tracking-widest text-center mb-2">Can't scan? Use code:</p>
+                  <div className="p-3 bg-[#F6F8FB] dark:bg-[#171A21] rounded-xl border border-gray-100 dark:border-white/5 text-center font-mono text-xs font-bold tracking-widest select-all">
+                    {secret.match(/.{1,4}/g)?.join(' ') || secret}
+                  </div>
+               </div>
+             )}
+
              <div className="flex items-center gap-2 text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">
                 <Smartphone size={12} />
                 <span>Google Authenticator</span>
